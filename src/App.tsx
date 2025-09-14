@@ -5,13 +5,19 @@ import './App.css'
 import useSocket from './hooks/useSocket'
 
 function App() {
-const [messageArray, setMessageArray] = useState<string[]>([]);
-const [socket, message] = useSocket();
-const [sendSocket, setSendMessage] = useState<string>('');
+interface Message {
+  id: string;
+  data: string;
+}
+const [messageArray, setMessageArray] = useState<Message[]>([]);
+const [socket, message,id] = useSocket();
+const [sendSocket, setSendMessage] = useState<Message>();
+const [text, setText] = useState("");
+
 
 
 useEffect(()=>{
-  if (message && typeof message === 'string') {
+  if (message) {
     setMessageArray((prev) => [...prev, message]);
   }
 
@@ -24,18 +30,25 @@ if(!socket){
 return (
   <>
     {messageArray.map((msg, index) => (
-      <div key={index}>{msg}</div>
+      <div key={index}>USER - [{msg.id}] ={'>'}{msg.data}</div>
     ))}
     <div>
-      <input type="text" onChange={(e) => setSendMessage(e.target.value)} onKeyDown={(e)=>{
-        if(e.key == "Enter"){
+      <input type="text" value={text} onChange={(e) =>{ setText(e.target.value); setSendMessage({ id, data: e.target.value })}} onKeyDown={(e)=>{
+        if(e.key == "Enter" && sendSocket){
           setMessageArray((e)=>[...e, sendSocket]);
-        socket.send(sendSocket);
+        socket.send(`USER - [${id}] =>${sendSocket.data} `);
+        setText("")
+
+        
         }
+
       }}/>
       <button onClick={()=>{
+        if(sendSocket){
         setMessageArray((e)=>[...e, sendSocket]);
-        socket.send(sendSocket);
+        socket.send(`USER - [${id}] =>${sendSocket.data} `);
+        setText("")
+        }
       }}>Send</button>
     </div>
   </>
